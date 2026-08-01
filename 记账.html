@@ -287,6 +287,58 @@
   .cat-row .cat-bar { flex:1; height:8px; background:var(--primary-light); border-radius:4px; overflow:hidden; }
   .cat-row .cat-bar-fill { height:100%; background:var(--primary); border-radius:4px; transition:width .5s; }
   .cat-row .cat-val { font-size:13px; font-weight:600; min-width:70px; text-align:right; }
+
+  /* ========== 多账本切换 bar ========== */
+  .book-bar { display:flex; align-items:center; gap:8px; background:var(--card); padding:8px 12px; border-radius:12px; box-shadow:var(--shadow); margin-bottom:12px; position:relative; }
+  .book-selector { display:flex; align-items:center; gap:6px; flex:1; cursor:pointer; padding:4px 8px; border-radius:8px; transition:background .15s; }
+  .book-selector:active { background:var(--primary-light); }
+  .book-selector .b-icon { font-size:18px; }
+  .book-selector .b-name { font-size:15px; font-weight:700; flex:1; }
+  .book-selector .caret { font-size:10px; color:var(--gray); transition:transform .2s; }
+  .book-selector.open .caret { transform:rotate(180deg); }
+  .book-add-btn { width:30px; height:30px; border:none; background:var(--primary-light); color:var(--primary); border-radius:8px; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .book-add-btn:active { transform:scale(0.92); }
+  .book-menu { position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--card); border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,.15); padding:6px; z-index:50; max-height:320px; overflow-y:auto; }
+  .book-menu-item { display:flex; align-items:center; gap:8px; padding:10px; border-radius:8px; cursor:pointer; font-size:14px; }
+  .book-menu-item:active { background:var(--primary-light); }
+  .book-menu-item.active { background:var(--primary-light); color:var(--primary); font-weight:600; }
+  .book-menu-item .b-icon { font-size:16px; }
+  .book-menu-item .b-name { flex:1; }
+  .book-menu-item .b-count { font-size:11px; color:var(--gray); }
+  .book-menu-divider { height:1px; background:var(--border); margin:4px 0; }
+  .book-menu-action { display:flex; align-items:center; gap:8px; padding:10px; border-radius:8px; cursor:pointer; font-size:13px; color:var(--gray); }
+  .book-menu-action:active { background:var(--primary-light); }
+
+  /* ========== 标签 chips ========== */
+  .tag-row { display:flex; flex-wrap:wrap; gap:6px; }
+  .tag-chip { display:inline-flex; align-items:center; padding:4px 10px; border-radius:14px; font-size:12px; background:#f0f0f0; color:#555; cursor:pointer; transition:all .15s; user-select:none; }
+  .tag-chip.selected { background:var(--primary); color:#fff; }
+  .tag-chip:active { transform:scale(0.95); }
+  .tag-chip.add-tag { background:transparent; border:1px dashed var(--gray); color:var(--gray); }
+  .tag-display { display:inline-flex; align-items:center; padding:1px 6px; border-radius:4px; font-size:10px; background:#fff3e0; color:#e67e22; margin-right:3px; }
+
+  /* ========== 编辑弹窗 modal ========== */
+  .modal-mask { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:200; display:flex; align-items:center; justify-content:center; padding:16px; animation:fadein .2s; }
+  .modal { background:var(--card); border-radius:16px; width:100%; max-width:420px; max-height:88vh; display:flex; flex-direction:column; overflow:hidden; }
+  .modal-header { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--border); font-size:16px; font-weight:700; }
+  .modal-header button { width:28px; height:28px; border:none; background:#f0f0f0; border-radius:50%; font-size:16px; cursor:pointer; color:#666; }
+  .modal-body { padding:14px 16px; overflow-y:auto; flex:1; }
+  .modal-footer { display:flex; gap:8px; padding:12px 16px; border-top:1px solid var(--border); }
+  .modal-footer button { flex:1; padding:11px; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; }
+  .btn-danger { background:#fee; color:#e74c3c; }
+  .btn-save { background:var(--primary); color:#fff; }
+  .modal-body .form-row { margin-bottom:10px; }
+  .modal-body .form-row label { display:block; font-size:12px; color:var(--gray); margin-bottom:4px; }
+  .modal-body .form-row input, .modal-body .form-row select, .modal-body .form-row textarea {
+    width:100%; padding:9px 10px; border:1px solid var(--border); border-radius:8px; font-size:14px; box-sizing:border-box; background:var(--card); color:var(--text);
+  }
+  .modal-body textarea { min-height:60px; resize:vertical; font-family:inherit; }
+  .modal-body .type-tabs, .modal-body .source-tabs { display:flex; gap:6px; margin-bottom:8px; }
+  .modal-body .type-tab, .modal-body .source-tab { flex:1; text-align:center; padding:8px; border-radius:8px; font-size:13px; cursor:pointer; background:#f4f4f4; color:#666; }
+  .modal-body .type-tab.active.expense { background:var(--red); color:#fff; }
+  .modal-body .type-tab.active.income { background:var(--primary); color:#fff; }
+  .modal-body .source-tab.active { background:var(--primary); color:#fff; }
+  .modal-section-title { font-size:12px; color:var(--gray); margin:10px 0 6px; }
 </style>
 <script>
 // 预加载 SheetJS（用于解析微信 xlsx 账单），失败不阻塞页面
@@ -304,7 +356,7 @@
 <div id="app">
   <aside class="sidebar" id="sidebar">
     <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()">◀</button>
-    <div class="sidebar-title"><span class="icon">📝</span><span>记账 <span style="font-size:9px; color:var(--light); font-weight:normal;">v1.4</span></span></div>
+    <div class="sidebar-title"><span class="icon">📝</span><span>记账 <span style="font-size:9px; color:var(--light); font-weight:normal;">v1.5</span></span></div>
     <div class="menu-item active" data-panel="home" onclick="switchPanel('home')"><span class="icon">📊</span><span>总览</span></div>
     <div class="menu-item" data-panel="add" onclick="switchPanel('add')"><span class="icon">➕</span><span>记一笔</span></div>
     <div class="menu-item" data-panel="list" onclick="switchPanel('list')"><span class="icon">📋</span><span>明细</span></div>
@@ -323,6 +375,15 @@
   </aside>
 
   <main class="content">
+    <div class="book-bar" id="book-bar">
+      <div class="book-selector" id="book-selector" onclick="toggleBookMenu(event)">
+        <span class="b-icon" id="cur-book-icon">💼</span>
+        <span class="b-name" id="cur-book-name">我的钱包</span>
+        <span class="caret">▼</span>
+      </div>
+      <button class="book-add-btn" onclick="openBookManager()" title="管理账本">⚙</button>
+    </div>
+    <div id="book-menu" class="book-menu" style="display:none;"></div>
 
     <!-- 总览 -->
     <section class="panel active" id="panel-home">
@@ -374,7 +435,14 @@
           <div class="source-tab cash" onclick="setSource('cash', this)">💵 现金</div>
         </div>
         <div class="form-row"><label>对方</label><input type="text" id="add-counterpart" placeholder="收款/付款方姓名（可选）"></div>
-        <div class="form-row"><label>备注</label><input type="text" id="add-note" placeholder="可选"></div>
+        <div class="form-row"><label>备注（可多行）</label><textarea id="add-note" placeholder="可选，支持多行"></textarea></div>
+        <div class="form-row"><label>🏷️ 标签</label>
+          <div class="tag-row" id="add-tags-row"></div>
+          <div style="display:flex; gap:6px; margin-top:6px;">
+            <input type="text" id="add-new-tag" placeholder="新标签名" style="flex:1; padding:8px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+            <button class="btn secondary" style="padding:8px 12px;" onclick="addFormTag()">＋</button>
+          </div>
+        </div>
         <div class="btn-row">
           <button class="btn" onclick="addRecord(false)">💾 保存</button>
           <button class="btn secondary" onclick="addRecord(true)">💾 保存并继续</button>
@@ -388,6 +456,7 @@
         <div class="card-title">📋 流水明细</div>
         <div class="filter-row" id="list-filters"></div>
         <div class="filter-row" id="list-source-filters"></div>
+        <div class="filter-row" id="list-tag-filters"></div>
         <div id="list-container"></div>
       </div>
     </section>
@@ -676,12 +745,19 @@ const THEMES = [
 /* ===================== 存储 ===================== */
 let state = {
   records: [],
+  books: [
+    { id: 'default', name: '我的钱包', icon: '💼', color: '#5dae7a' }
+  ],
+  curBook: 'default',
+  customTags: ['请客','报销','借款','还款'],
   budget: {},
   curMonth: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; })(),
   filterType: 'all',
   filterSource: 'all',
+  filterTag: 'all',
   formType: 'expense',
   formSource: 'wechat',
+  formTags: [],
   theme: 'green',
   remind: {
     daily:    { on: true,  time: '21:00', text: '该记账啦～别忘了今天的开销' },
@@ -707,6 +783,19 @@ function loadState() {
     state.curMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
   }
   if (!Array.isArray(state.records)) state.records = [];
+  // ===== v1.5 数据迁移：多账本 + 标签 =====
+  if (!Array.isArray(state.books) || state.books.length === 0) {
+    state.books = [{ id: 'default', name: '我的钱包', icon: '💼', color: '#5dae7a' }];
+  }
+  if (!state.curBook || !state.books.find(b => b.id === state.curBook)) state.curBook = state.books[0].id;
+  if (!Array.isArray(state.customTags)) state.customTags = ['请客','报销','借款','还款'];
+  if (!state.filterTag) state.filterTag = 'all';
+  if (!Array.isArray(state.formTags)) state.formTags = [];
+  // 旧记录补 bookId/tags
+  state.records.forEach(r => {
+    if (!r.bookId) r.bookId = 'default';
+    if (!Array.isArray(r.tags)) r.tags = [];
+  });
 }
 function saveState() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e) {}
@@ -911,7 +1000,7 @@ function renderHome() {
   try {
     document.getElementById('home-month').textContent = state.curMonth.replace('-','年') + '月';
   } catch(e) { console.warn('month label err', e); }
-  const allList = (state.records || []).filter(r => getMonth(r.date) === state.curMonth);
+  const allList = (state.records || []).filter(r => getMonth(r.date) === state.curMonth && r.bookId === state.curBook);
   const list = getEffective(allList);
   const offsetCount = allList.length - list.length;
   const offsetAmount = allList.filter(r => r.excluded === 'transfer' && r.type === 'expense').reduce((s,r) => s + r.amount, 0);
@@ -963,6 +1052,32 @@ function renderHome() {
 function initAddForm() {
   document.getElementById('add-date').value = todayKey();
   renderCategoryOptions();
+  renderFormTags();
+}
+function renderFormTags() {
+  const row = document.getElementById('add-tags-row');
+  if (!row) return;
+  const all = [...new Set([...state.customTags, ...state.formTags])];
+  row.innerHTML = all.map(t => {
+    const sel = state.formTags.includes(t) ? 'selected' : '';
+    return `<div class="tag-chip ${sel}" onclick="toggleFormTag('${escapeHtml(t)}')">${escapeHtml(t)}</div>`;
+  }).join('');
+}
+function toggleFormTag(t) {
+  const i = state.formTags.indexOf(t);
+  if (i >= 0) state.formTags.splice(i, 1);
+  else state.formTags.push(t);
+  renderFormTags();
+}
+function addFormTag() {
+  const input = document.getElementById('add-new-tag');
+  const t = input.value.trim();
+  if (!t) return;
+  if (!state.customTags.includes(t)) state.customTags.push(t);
+  if (!state.formTags.includes(t)) state.formTags.push(t);
+  input.value = '';
+  renderFormTags();
+  saveState();
 }
 function renderCategoryOptions() {
   const sel = document.getElementById('add-category');
@@ -992,6 +1107,8 @@ function addRecord(again) {
     source: state.formSource,
     counterpart: document.getElementById('add-counterpart').value.trim(),
     note: document.getElementById('add-note').value.trim(),
+    tags: [...state.formTags],
+    bookId: state.curBook,
     time: new Date().toTimeString().slice(0,5)
   };
   state.records.unshift(rec);
@@ -1008,11 +1125,14 @@ function addRecord(again) {
     document.getElementById('add-amount').value = '';
     document.getElementById('add-note').value = '';
     document.getElementById('add-counterpart').value = '';
+    state.formTags = [];
+    renderFormTags();
     document.getElementById('add-amount').focus();
   } else {
     document.getElementById('add-amount').value = '';
     document.getElementById('add-note').value = '';
     document.getElementById('add-counterpart').value = '';
+    state.formTags = [];
     switchPanel('list');
   }
 }
@@ -1046,11 +1166,11 @@ function renderStats() {
 
 // 取得指定月份内全部记录（已过滤转账抵消）
 function recordsInMonth(monthKey) {
-  return getEffective(state.records).filter(r => getMonth(r.date) === monthKey);
+  return getEffective(state.records).filter(r => getMonth(r.date) === monthKey && r.bookId === state.curBook);
 }
 // 取得指定年内全部记录
 function recordsInYear(yearKey) {
-  return getEffective(state.records).filter(r => (r.date||'').slice(0,4) === yearKey);
+  return getEffective(state.records).filter(r => (r.date||'').slice(0,4) === yearKey && r.bookId === state.curBook);
 }
 
 // ============== 月度视图 ==============
@@ -1455,9 +1575,18 @@ function renderList() {
   document.getElementById('list-source-filters').innerHTML = srcFilters.map(f =>
     `<div class="filter-chip${state.filterSource === f.id ? ' active' : ''}" onclick="setFilter('source','${f.id}')">${f.name}</div>`).join('');
 
-  let list = state.records.filter(r => getMonth(r.date) === state.curMonth);
+  // 标签筛选条
+  const allTags = [...new Set(state.records.flatMap(r => r.tags || []).filter(t => t))];
+  const tagFiltersEl = document.getElementById('list-tag-filters');
+  if (tagFiltersEl) {
+    tagFiltersEl.innerHTML = `<div class="filter-chip${state.filterTag === 'all' ? ' active' : ''}" onclick="setFilter('tag','all')">全部标签</div>` +
+      allTags.map(t => `<div class="filter-chip${state.filterTag === t ? ' active' : ''}" onclick="setFilter('tag','${escapeHtml(t)}')">${escapeHtml(t)}</div>`).join('');
+  }
+
+  let list = state.records.filter(r => getMonth(r.date) === state.curMonth && r.bookId === state.curBook);
   if (state.filterType !== 'all') list = list.filter(r => r.type === state.filterType);
   if (state.filterSource !== 'all') list = list.filter(r => r.source === state.filterSource);
+  if (state.filterTag !== 'all') list = list.filter(r => (r.tags || []).includes(state.filterTag));
   list = list.sort((a,b) => (b.date + (b.time||'')).localeCompare(a.date + (a.time||'')));
 
   const container = document.getElementById('list-container');
@@ -1465,8 +1594,9 @@ function renderList() {
   container.innerHTML = list.map(r => {
     const isOff = r.excluded === 'transfer';
     const offTag = isOff ? `<span class="src-tag offset">🔄 已抵消</span>` : '';
+    const tagsHtml = (r.tags && r.tags.length) ? r.tags.map(t => `<span class="tag-display">${escapeHtml(t)}</span>`).join('') : '';
     return `
-      <div class="record-item" style="${isOff ? 'opacity:0.55;' : ''}">
+      <div class="record-item" style="${isOff ? 'opacity:0.55;' : ''} cursor:pointer;" onclick="editRecord('${r.id}')">
         <div class="record-icon ${r.source}">${SRC_ICON[r.source]}</div>
         <div class="record-info">
           <div class="desc">${escapeHtml(r.note || catName(r.category, r.type))}${r.counterpart ? ' · ' + escapeHtml(r.counterpart) : ''}</div>
@@ -1474,15 +1604,17 @@ function renderList() {
             <span class="src-tag ${r.source}">${SRC_NAME[r.source]}</span>${offTag}
             ${fmtDate(r.date)} ${r.time||''} · ${catName(r.category, r.type)}
           </div>
+          ${tagsHtml ? `<div class="meta" style="margin-top:3px;">${tagsHtml}</div>` : ''}
         </div>
         <div class="record-amount ${r.type}" style="${isOff ? 'text-decoration:line-through; color:var(--gray);' : ''}">${r.type === 'income' ? '+' : '-'}${fmtMoney(r.amount)}</div>
-        <button class="del-btn" onclick="delRecord('${r.id}')">×</button>
+        <button class="del-btn" onclick="event.stopPropagation(); delRecord('${r.id}')">×</button>
       </div>`;
   }).join('');
 }
 function setFilter(kind, val) {
   if (kind === 'type') state.filterType = val;
-  else state.filterSource = val;
+  else if (kind === 'source') state.filterSource = val;
+  else if (kind === 'tag') state.filterTag = val;
   saveState();
   renderList();
 }
@@ -1494,6 +1626,123 @@ function delRecord(id) {
   renderList();
   // 删除后重新检查预算超支
   checkAllRemind();
+}
+
+/* ===================== 编辑记录 ===================== */
+let _editingId = null;
+let _editTags = [];
+function editRecord(id) {
+  const r = state.records.find(x => x.id === id);
+  if (!r) return;
+  _editingId = id;
+  _editTags = [...(r.tags || [])];
+  const cats = (r.type === 'income' ? INCOME_CATS : EXPENSE_CATS)
+    .map(c => `<option value="${c.id}" ${c.id === r.category ? 'selected' : ''}>${c.name}</option>`).join('');
+  document.getElementById('edit-modal-body').innerHTML = `
+    <div class="type-tabs">
+      <div class="type-tab expense ${r.type==='expense'?'active':''}" onclick="setEditType('expense', this)">支出</div>
+      <div class="type-tab income ${r.type==='income'?'active':''}" onclick="setEditType('income', this)">收入</div>
+    </div>
+    <div class="form-row"><label>金额</label><input type="number" id="edit-amount" step="0.01" value="${r.amount}"></div>
+    <div class="form-row"><label>分类</label><select id="edit-category">${cats}</select></div>
+    <div class="form-row"><label>日期</label><input type="date" id="edit-date" value="${r.date}"></div>
+    <div class="modal-section-title">💰 钱款来源</div>
+    <div class="source-tabs">
+      <div class="source-tab wechat ${r.source==='wechat'?'active':''}" onclick="setEditSource('wechat', this)">💬 微信</div>
+      <div class="source-tab alipay ${r.source==='alipay'?'active':''}" onclick="setEditSource('alipay', this)">💳 支付宝</div>
+      <div class="source-tab cash ${r.source==='cash'?'active':''}" onclick="setEditSource('cash', this)">💵 现金</div>
+    </div>
+    <div class="form-row"><label>对方</label><input type="text" id="edit-counterpart" value="${escapeHtml(r.counterpart||'')}"></div>
+    <div class="form-row"><label>备注（可多行）</label><textarea id="edit-note">${escapeHtml(r.note||'')}</textarea></div>
+    <div class="modal-section-title">🏷️ 标签</div>
+    <div class="tag-row" id="edit-tags-row"></div>
+    <div class="form-row" style="display:flex; gap:6px; margin-top:8px;">
+      <input type="text" id="edit-new-tag" placeholder="新标签名" style="flex:1; padding:8px; border:1px solid var(--border); border-radius:8px; font-size:13px;">
+      <button class="btn-save" style="padding:8px 12px; border:none; border-radius:8px; cursor:pointer;" onclick="addEditTag()">＋</button>
+    </div>
+  `;
+  renderEditTags();
+  document.getElementById('edit-modal').style.display = 'flex';
+}
+function setEditType(t, el) {
+  document.querySelectorAll('#edit-modal .type-tab').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  el._editType = t;
+  // 同步分类选项
+  const cur = document.getElementById('edit-category').value;
+  const cats = (t === 'income' ? INCOME_CATS : EXPENSE_CATS);
+  document.getElementById('edit-category').innerHTML = cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+}
+function setEditSource(s, el) {
+  document.querySelectorAll('#edit-modal .source-tab').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  el._editSource = s;
+}
+function renderEditTags() {
+  const row = document.getElementById('edit-tags-row');
+  if (!row) return;
+  const all = [...new Set([...state.customTags, ..._editTags])];
+  row.innerHTML = all.map(t => {
+    const sel = _editTags.includes(t) ? 'selected' : '';
+    return `<div class="tag-chip ${sel}" onclick="toggleEditTag('${escapeHtml(t)}')">${escapeHtml(t)}</div>`;
+  }).join('');
+}
+function toggleEditTag(t) {
+  const i = _editTags.indexOf(t);
+  if (i >= 0) _editTags.splice(i, 1);
+  else _editTags.push(t);
+  renderEditTags();
+}
+function addEditTag() {
+  const input = document.getElementById('edit-new-tag');
+  const t = input.value.trim();
+  if (!t) return;
+  if (!state.customTags.includes(t)) state.customTags.push(t);
+  if (!_editTags.includes(t)) _editTags.push(t);
+  input.value = '';
+  renderEditTags();
+  saveState();
+}
+function saveEdit() {
+  const r = state.records.find(x => x.id === _editingId);
+  if (!r) { closeEditModal(); return; }
+  const amount = parseFloat(document.getElementById('edit-amount').value);
+  if (!amount || amount <= 0) { toast('⚠️ 请输入金额'); return; }
+  r.amount = amount;
+  r.category = document.getElementById('edit-category').value;
+  r.date = document.getElementById('edit-date').value;
+  r.counterpart = document.getElementById('edit-counterpart').value.trim();
+  r.note = document.getElementById('edit-note').value.trim();
+  r.tags = [..._editTags];
+  // 类型
+  const typeEl = document.querySelector('#edit-modal .type-tab.active');
+  if (typeEl && typeEl._editType) r.type = typeEl._editType;
+  // 来源
+  const srcEl = document.querySelector('#edit-modal .source-tab.active');
+  if (srcEl && srcEl._editSource) r.source = srcEl._editSource;
+  const offsetN = detectTransfers();
+  saveState();
+  closeEditModal();
+  renderList();
+  renderHome();
+  toast('✅ 已更新' + (offsetN > 0 ? '，检测到转账抵消' : ''));
+}
+function delRecordFromModal() {
+  if (!_editingId) return;
+  if (!confirm('删除这条记录？')) return;
+  state.records = state.records.filter(r => r.id !== _editingId);
+  detectTransfers();
+  saveState();
+  closeEditModal();
+  renderList();
+  renderHome();
+  checkAllRemind();
+  toast('已删除');
+}
+function closeEditModal() {
+  document.getElementById('edit-modal').style.display = 'none';
+  _editingId = null;
+  _editTags = [];
 }
 
 /* ===================== 预算规划 ===================== */
@@ -1647,7 +1896,7 @@ function autoPlan() {
 }
 
 function renderPlanCompare(ratios, income, savingAmount) {
-  const monthRecs = state.records.filter(r => getMonth(r.date) === state.curMonth);
+  const monthRecs = state.records.filter(r => getMonth(r.date) === state.curMonth && r.bookId === state.curBook);
   const effective = getEffective(monthRecs);
   const actualByCat = {};
   effective.filter(r => r.type === 'expense').forEach(r => {
@@ -2019,7 +2268,7 @@ function saveOcrRecord() {
 /* ===================== 来源分析 ===================== */
 function renderSourceAnalysis() {
   document.getElementById('src-month').textContent = state.curMonth.replace('-','年') + '月';
-  const allList = state.records.filter(r => getMonth(r.date) === state.curMonth);
+  const allList = state.records.filter(r => getMonth(r.date) === state.curMonth && r.bookId === state.curBook);
   const list = getEffective(allList);
   const el = document.getElementById('source-analysis');
   const offEl = document.getElementById('offset-list');
@@ -2509,7 +2758,7 @@ function renderBudget() {
   const el = document.getElementById('budget-status');
   const budget = state.budget[state.curMonth] || 0;
   if (!budget) { el.innerHTML = '<div class="empty">请先设置本月预算</div>'; return; }
-  const monthRecs = state.records.filter(r => getMonth(r.date) === state.curMonth);
+  const monthRecs = state.records.filter(r => getMonth(r.date) === state.curMonth && r.bookId === state.curBook);
   const spent = getEffective(monthRecs).filter(r => r.type === 'expense').reduce((s, r) => s + r.amount, 0);
   const pct = (spent / budget * 100).toFixed(1);
   const remain = budget - spent;
@@ -2541,7 +2790,7 @@ function exportData() {
 function resetData() {
   if (!confirm('确定清空所有记账数据？此操作不可恢复。')) return;
   localStorage.removeItem(STORE_KEY);
-  state = { records: [], budget: {}, curMonth: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; })(), filterType:'all', filterSource:'all', formType:'expense', formSource:'wechat', theme: state.theme || 'green', statsTab: 'month', pendingRecords: [] };
+  state = { records: [], books: [{ id: 'default', name: '我的钱包', icon: '💼', color: '#5dae7a' }], curBook: 'default', customTags: ['请客','报销','借款','还款'], budget: {}, curMonth: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; })(), filterType:'all', filterSource:'all', filterTag:'all', formType:'expense', formSource:'wechat', formTags:[], theme: state.theme || 'green', statsTab: 'month', pendingRecords: [] };
   saveState();
   toast('🗑️ 数据已清空');
   switchPanel('home');
@@ -2577,6 +2826,17 @@ window.addEventListener('DOMContentLoaded', () => {
   purgeOldServiceWorkers();
   // 初始化侧边栏伸缩
   initSidebar();
+  // 初始化账本切换 bar
+  refreshBookBar();
+  // 点击外部关闭账本菜单
+  document.addEventListener('click', e => {
+    const menu = document.getElementById('book-menu');
+    const bar = document.getElementById('book-bar');
+    if (menu && menu.style.display !== 'none' && bar && !bar.contains(e.target)) {
+      menu.style.display = 'none';
+      document.getElementById('book-selector').classList.remove('open');
+    }
+  });
   // 检测版本号，若 localStorage 中标记的版本低于当前 HTML 版本，显示升级横幅
   checkVersionBanner();
 });
@@ -2598,6 +2858,124 @@ function checkVersionBanner() {
 }
 
 /* 清理所有旧版 Service Worker，打破缓存死锁 */
+/* ===================== 多账本 ===================== */
+function curBookObj() { return state.books.find(b => b.id === state.curBook) || state.books[0]; }
+function refreshBookBar() {
+  const b = curBookObj();
+  const iconEl = document.getElementById('cur-book-icon');
+  const nameEl = document.getElementById('cur-book-name');
+  if (iconEl) iconEl.textContent = b.icon;
+  if (nameEl) nameEl.textContent = b.name;
+}
+function toggleBookMenu(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('book-menu');
+  const sel = document.getElementById('book-selector');
+  if (!menu) return;
+  const open = menu.style.display !== 'none';
+  if (open) { menu.style.display = 'none'; sel.classList.remove('open'); return; }
+  // 渲染菜单
+  const counts = {};
+  state.records.forEach(r => { counts[r.bookId] = (counts[r.bookId]||0) + 1; });
+  menu.innerHTML = state.books.map(b => `
+    <div class="book-menu-item${b.id === state.curBook ? ' active' : ''}" onclick="switchBook('${b.id}')">
+      <span class="b-icon">${b.icon}</span>
+      <span class="b-name">${escapeHtml(b.name)}</span>
+      <span class="b-count">${counts[b.id]||0} 笔</span>
+    </div>
+  `).join('') + `
+    <div class="book-menu-divider"></div>
+    <div class="book-menu-action" onclick="openBookManager()">⚙️ 管理账本</div>
+    <div class="book-menu-action" onclick="addNewBook()">➕ 新建账本</div>
+  `;
+  menu.style.display = 'block';
+  sel.classList.add('open');
+}
+function switchBook(id) {
+  state.curBook = id;
+  saveState();
+  document.getElementById('book-menu').style.display = 'none';
+  document.getElementById('book-selector').classList.remove('open');
+  refreshBookBar();
+  // 重新渲染所有面板
+  renderHome(); renderList();
+  if (document.getElementById('panel-source').classList.contains('active')) renderSourceAnalysis();
+  if (document.getElementById('panel-stats').classList.contains('active')) renderStats();
+  toast('已切换到「' + curBookObj().name + '」');
+}
+function addNewBook() {
+  document.getElementById('book-menu').style.display = 'none';
+  openBookManager('new');
+}
+function openBookManager(mode) {
+  const modal = document.getElementById('book-modal');
+  if (!modal) return;
+  renderBookManager();
+  modal.style.display = 'flex';
+  if (mode === 'new') {
+    setTimeout(() => {
+      const nameInput = document.getElementById('bm-new-name');
+      if (nameInput) nameInput.focus();
+    }, 100);
+  }
+}
+function renderBookManager() {
+  const list = document.getElementById('bm-list');
+  if (!list) return;
+  list.innerHTML = state.books.map(b => `
+    <div class="bm-row" data-id="${b.id}">
+      <span class="bm-icon">${b.icon}</span>
+      <span class="bm-name">${escapeHtml(b.name)}</span>
+      <span class="bm-count">${state.records.filter(r=>r.bookId===b.id).length} 笔</span>
+      <button class="bm-edit" onclick="editBook('${b.id}')">✏️</button>
+      ${b.id !== 'default' ? `<button class="bm-del" onclick="deleteBook('${b.id}')">🗑️</button>` : ''}
+    </div>
+  `).join('');
+}
+function bmAddBook() {
+  const name = document.getElementById('bm-new-name').value.trim();
+  if (!name) { toast('请输入账本名'); return; }
+  const icons = ['💼','🏠','💰','📊','🎯','🛒','🏪','🎁','💳','📦'];
+  const colors = ['#5dae7a','#3498db','#e67e22','#9b59b6','#e74c3c','#1abc9c','#f39c12','#16a085'];
+  const id = 'book_' + uid();
+  state.books.push({ id, name, icon: icons[state.books.length % icons.length], color: colors[state.books.length % colors.length] });
+  saveState();
+  document.getElementById('bm-new-name').value = '';
+  renderBookManager();
+  toast('✅ 已新建账本「' + name + '」');
+}
+function editBook(id) {
+  const b = state.books.find(x => x.id === id);
+  if (!b) return;
+  const name = prompt('账本名称', b.name);
+  if (!name || !name.trim()) return;
+  b.name = name.trim();
+  const icon = prompt('图标（输入一个 emoji）', b.icon);
+  if (icon && icon.trim()) b.icon = icon.trim();
+  saveState();
+  renderBookManager();
+  refreshBookBar();
+}
+function deleteBook(id) {
+  const b = state.books.find(x => x.id === id);
+  if (!b) return;
+  const cnt = state.records.filter(r => r.bookId === id).length;
+  let msg = `确定删除账本「${b.name}」？`;
+  if (cnt > 0) msg += `\n该账本有 ${cnt} 条记录，将转移到「${state.books[0].name}」。`;
+  if (!confirm(msg)) return;
+  // 记录转移到默认账本
+  state.records.forEach(r => { if (r.bookId === id) r.bookId = state.books[0].id; });
+  state.books = state.books.filter(x => x.id !== id);
+  if (state.curBook === id) state.curBook = state.books[0].id;
+  saveState();
+  renderBookManager();
+  refreshBookBar();
+  toast('已删除账本，记录已转移');
+}
+function closeBookManager() {
+  document.getElementById('book-modal').style.display = 'none';
+}
+
 /* ===================== 侧边栏伸缩 ===================== */
 function initSidebar() {
   const sb = document.getElementById('sidebar');
@@ -2800,5 +3178,44 @@ if ('serviceWorker' in navigator) {
   */
 }
 </script>
+
+<!-- 账本管理弹窗 -->
+<div id="book-modal" class="modal-mask" style="display:none;">
+  <div class="modal">
+    <div class="modal-header">📚 管理账本 <button onclick="closeBookManager()">×</button></div>
+    <div class="modal-body">
+      <div id="bm-list"></div>
+      <div class="modal-section-title">新建账本</div>
+      <div class="form-row" style="display:flex; gap:6px;">
+        <input type="text" id="bm-new-name" placeholder="账本名称（如：家庭公用）" style="flex:1; padding:9px; border:1px solid var(--border); border-radius:8px; font-size:14px;">
+        <button class="btn-save" style="padding:9px 14px; border:none; border-radius:8px; cursor:pointer;" onclick="bmAddBook()">添加</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-save" onclick="closeBookManager()">完成</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.bm-row { display:flex; align-items:center; gap:8px; padding:10px 0; border-bottom:1px solid var(--border); }
+.bm-row .bm-icon { font-size:18px; }
+.bm-row .bm-name { flex:1; font-size:14px; font-weight:600; }
+.bm-row .bm-count { font-size:11px; color:var(--gray); }
+.bm-row .bm-edit, .bm-row .bm-del { background:none; border:none; cursor:pointer; font-size:14px; padding:4px; }
+</style>
+
+<!-- 编辑记录弹窗 -->
+<div id="edit-modal" class="modal-mask" style="display:none;">
+  <div class="modal">
+    <div class="modal-header">✏️ 编辑记录 <button onclick="closeEditModal()">×</button></div>
+    <div class="modal-body" id="edit-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn-danger" onclick="delRecordFromModal()">🗑️ 删除</button>
+      <button class="btn-save" onclick="saveEdit()">💾 保存</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
