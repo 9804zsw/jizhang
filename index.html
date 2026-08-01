@@ -46,8 +46,20 @@
   html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif; font-size: 14px; color: var(--text); background: var(--bg); padding-top: var(--safe-top); padding-bottom: var(--safe-bottom); }
   #app { display: flex; height: calc(100dvh - var(--safe-top) - var(--safe-bottom)); }
 
-  .sidebar { width: 26%; min-width: 115px; max-width: 170px; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 10px 0; overflow-y: auto; }
-  .sidebar-title { text-align: center; font-size: 15px; color: var(--primary); font-weight: 700; padding: 8px 0 12px; border-bottom: 1px dashed var(--border); margin-bottom: 6px; }
+  .sidebar { width: 26%; min-width: 60px; max-width: 300px; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 10px 0; overflow-y: auto; overflow-x: hidden; position: relative; transition: width .25s ease; }
+  .sidebar.collapsed { width: 60px !important; }
+  .sidebar.collapsed .menu-item span:not(.icon) { display: none; }
+  .sidebar.collapsed .menu-item { justify-content: center; padding: 10px 0; margin: 3px 8px; }
+  .sidebar.collapsed .sidebar-title span:not(.icon) { display: none; }
+  .sidebar.collapsed .sidebar-title { font-size: 18px; }
+  .sidebar.collapsed #update-banner { display: none !important; }
+  .sidebar-title { text-align: center; font-size: 15px; color: var(--primary); font-weight: 700; padding: 8px 0 12px; border-bottom: 1px dashed var(--border); margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .sidebar-toggle { position: absolute; top: 10px; right: 6px; width: 22px; height: 22px; border: none; background: var(--primary-light); color: var(--primary); border-radius: 6px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5; }
+  .sidebar-toggle:active { transform: scale(0.9); }
+  .sidebar-resizer { position: absolute; top: 0; right: -3px; width: 6px; height: 100%; cursor: col-resize; background: transparent; z-index: 4; transition: background .15s; }
+  .sidebar-resizer:hover, .sidebar-resizer.dragging { background: rgba(93,174,122,0.3); }
+  .sidebar-resizer::after { content: '⋮'; position: absolute; top: 50%; right: -1px; transform: translateY(-50%); color: var(--light); font-size: 12px; opacity: 0; transition: opacity .15s; }
+  .sidebar-resizer:hover::after { opacity: 1; }
   .menu-item { display: flex; align-items: center; gap: 7px; padding: 10px 12px; margin: 3px 6px; border-radius: 10px; cursor: pointer; font-size: 13px; transition: 0.2s; user-select: none; }
   .menu-item .icon { font-size: 16px; }
   .menu-item.active { background: var(--primary); color: #fff; font-weight: 500; box-shadow: 0 2px 6px rgba(93,174,122,0.3); }
@@ -290,8 +302,9 @@
 <body>
 
 <div id="app">
-  <aside class="sidebar">
-    <div class="sidebar-title">📝 记账 <span style="font-size:9px; color:var(--light); font-weight:normal;">v1.4</span></div>
+  <aside class="sidebar" id="sidebar">
+    <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()">◀</button>
+    <div class="sidebar-title"><span class="icon">📝</span><span>记账 <span style="font-size:9px; color:var(--light); font-weight:normal;">v1.4</span></span></div>
     <div class="menu-item active" data-panel="home" onclick="switchPanel('home')"><span class="icon">📊</span><span>总览</span></div>
     <div class="menu-item" data-panel="add" onclick="switchPanel('add')"><span class="icon">➕</span><span>记一笔</span></div>
     <div class="menu-item" data-panel="list" onclick="switchPanel('list')"><span class="icon">📋</span><span>明细</span></div>
@@ -306,6 +319,7 @@
       <div style="font-weight:700; font-size:12px;">🆙 发现新版本</div>
       <div style="opacity:.9;">点击刷新到 v1.4（含可视化面板）</div>
     </div>
+    <div class="sidebar-resizer" id="sidebar-resizer"></div>
   </aside>
 
   <main class="content">
@@ -2561,6 +2575,8 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   // ===== 自愈：清理旧版 Service Worker，确保加载最新代码 =====
   purgeOldServiceWorkers();
+  // 初始化侧边栏伸缩
+  initSidebar();
   // 检测版本号，若 localStorage 中标记的版本低于当前 HTML 版本，显示升级横幅
   checkVersionBanner();
 });
@@ -2582,6 +2598,98 @@ function checkVersionBanner() {
 }
 
 /* 清理所有旧版 Service Worker，打破缓存死锁 */
+/* ===================== 侧边栏伸缩 ===================== */
+function initSidebar() {
+  const sb = document.getElementById('sidebar');
+  if (!sb) return;
+  // 恢复记忆的宽度
+  const savedW = localStorage.getItem('bear_sidebar_w');
+  if (savedW) sb.style.width = savedW + 'px';
+  // 恢复折叠状态
+  if (localStorage.getItem('bear_sidebar_collapsed') === '1') {
+    sb.classList.add('collapsed');
+    const btn = document.getElementById('sidebar-toggle');
+    if (btn) btn.textContent = '▶';
+  }
+  updateToggleIcon();
+
+  // 拖拽调整宽度
+  const resizer = document.getElementById('sidebar-resizer');
+  if (!resizer) return;
+  let dragging = false, startX = 0, startW = 0;
+
+  function onDown(e) {
+    if (sb.classList.contains('collapsed')) return; // 折叠态不允许拖
+    dragging = true;
+    startX = (e.touches ? e.touches[0].clientX : e.clientX);
+    startW = sb.offsetWidth;
+    resizer.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    const x = (e.touches ? e.touches[0].clientX : e.clientX);
+    const w = Math.max(60, Math.min(300, startW + (x - startX)));
+    sb.style.width = w + 'px';
+    // 拖到很窄自动折叠
+    if (w <= 70 && !sb.classList.contains('collapsed')) {
+      sb.classList.add('collapsed');
+      const btn = document.getElementById('sidebar-toggle');
+      if (btn) btn.textContent = '▶';
+    } else if (w > 70 && sb.classList.contains('collapsed')) {
+      sb.classList.remove('collapsed');
+      const btn = document.getElementById('sidebar-toggle');
+      if (btn) btn.textContent = '◀';
+    }
+  }
+  function onUp() {
+    if (!dragging) return;
+    dragging = false;
+    resizer.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    // 记忆宽度（用 inline style 解析值，避免 transition 期间 offsetWidth 不准）
+    const inlineW = parseInt(sb.style.width) || sb.offsetWidth;
+    if (sb.classList.contains('collapsed')) {
+      localStorage.setItem('bear_sidebar_collapsed', '1');
+      localStorage.setItem('bear_sidebar_w', '60');
+    } else {
+      localStorage.setItem('bear_sidebar_collapsed', '0');
+      localStorage.setItem('bear_sidebar_w', String(inlineW));
+    }
+  }
+  resizer.addEventListener('mousedown', onDown);
+  resizer.addEventListener('touchstart', onDown, { passive: false });
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('touchmove', onMove, { passive: false });
+  document.addEventListener('mouseup', onUp);
+  document.addEventListener('touchend', onUp);
+}
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  if (!sb) return;
+  const collapsed = sb.classList.toggle('collapsed');
+  const btn = document.getElementById('sidebar-toggle');
+  if (btn) btn.textContent = collapsed ? '▶' : '◀';
+  if (collapsed) {
+    localStorage.setItem('bear_sidebar_collapsed', '1');
+    localStorage.setItem('bear_sidebar_w', '60');
+  } else {
+    localStorage.setItem('bear_sidebar_collapsed', '0');
+    // 展开时恢复到记忆宽度或默认 26%
+    const savedW = localStorage.getItem('bear_sidebar_w');
+    sb.style.width = (savedW && parseInt(savedW) > 70 ? savedW : '') || '';
+  }
+}
+function updateToggleIcon() {
+  const sb = document.getElementById('sidebar');
+  const btn = document.getElementById('sidebar-toggle');
+  if (!sb || !btn) return;
+  btn.textContent = sb.classList.contains('collapsed') ? '▶' : '◀';
+}
+
 function purgeOldServiceWorkers() {
   if (!('serviceWorker' in navigator)) return;
   navigator.serviceWorker.getRegistrations().then(regs => {
